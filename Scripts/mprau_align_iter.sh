@@ -18,7 +18,6 @@ python_dir=/broad/software/free/Linux/redhat_6_x86_64/pkgs/python_2.7.1-sqlite3-
 #cut off first bp
 script_dir=/idi/sabeti-scratch/jxue/dustin_project/CMS-GWAS/scripts
 
-
 #gunzip -c ${file_path}/${file_name}.fastq.gz > ${temp_path}/${file_name}.fastq
 
 #num_initial_reads=$( gunzip -c ${temp_path}/${file_name}.fastq.gz | wc -l | awk '{print $1/4}' ) 
