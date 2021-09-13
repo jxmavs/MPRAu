@@ -2,5 +2,7 @@ The master script that runs everything to generate the count table from raw read
 
 I also output a final statistics table which gives me info on how many reads are filtered out, etc.
 
+command_log_share.sh is written using the qsub system.
+
 After generating the count data, to generate the processed data (DESeq2 fold changes/p-values), use Scripts/generate_processed_DESeq2_data.R
 
