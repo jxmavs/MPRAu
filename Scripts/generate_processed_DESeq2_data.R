@@ -14,7 +14,7 @@ inputCountFileName=paste(primary_file_path, "Data", "mprau_novaseq_12_15_18_noba
 #columns are:  treat type, ref type, comparison group, row subset group, name of comparison group 
 compareInfoDFFileName=paste(primary_file_path, "Data", novaseq_cell_type_comparisons.txt", sep="/")
 
-out_file_path=paste(primary_file_path, "Output", sep="/")
+out_file_path=paste(primary_file_path, "Processed_Output", sep="/")
 if(!file.exists(out_file_path)){
 	dir.create(out_file_path)
 }

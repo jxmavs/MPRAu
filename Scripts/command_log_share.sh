@@ -1,22 +1,23 @@
 ######################### alignment ##########################
 
-data_dir=/idi/sabeti-scratch/jxue/dustin_project/CMS-GWAS
-alignment_fasta_file=${data_dir}/GWASrewritepos_CMS_alignment_file.fasta
+#change directory to downloaded git repository 
+initial_data_dir=/Users/jxue/Documents/Dustin_Project/CMS-GWAS/Scripts/github/MPRAu
 
+alignment_fasta_file=${initial_data_dir}/GWASrewritepos_CMS_alignment_file.fasta
+info_file=${initial_data_dir}/GWASrewritepos_CMS_alignment_file_align.table
+bwa_ind=${initial_data_dir}/GWASrewritepos_CMS_alignment_file_align
 
-out_path=${data_dir}/Novaseq_12-15-18/analysis
-bwa_ind=${data_dir}/GWASrewritepos_CMS_alignment_file_align
-file_path=${data_dir}/Novaseq_12-15-18/data
-temp_dir=/broad/hptmp/jxue/nova_12-15-18/mprau
+out_path=${initial_data_dir}/Novaseq_12-15-18/analysis
+file_path=${initial_data_dir}/Novaseq_12-15-18/data
+temp_dir=${initial_data_dir}/Temp
 
-script_dir=${data_dir}/scripts
+script_dir=${initial_data_dir}/scripts
 header_name=mprau_novaseq_12_15_18
 
-info_file=${data_dir}/GWASrewritepos_CMS_alignment_file_align.table
 numCores=1
 
 #make index file
-bwa index ${alignment_fasta_file} -p ${data_dir}/GWASrewritepos_CMS_alignment_file_align
+bwa index ${alignment_fasta_file} -p ${bwa_ind}
 
 #raw file
 #first column is file_path, second column is lane number, third column is read number (read 1 or read 2), third column is p7 index, fourth column is p5 index
