@@ -5,19 +5,24 @@ library(DESeq2) #Differential Expression Analysis
 
 ###############################################
 
+#change to downloaded directory
+primary_file_path="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/Scripts/github/MPRAu"
 
-inputConditionsFileName="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/mprau_novaseq_12_15_18_nobar_deseq_cond_file.txt"
-inputCountFileName="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/mprau_novaseq_12_15_18_nobar_deseq.txt"
+inputConditionsFileName=paste(primary_file_path, "Data", "mprau_novaseq_12_15_18_nobar_deseq_cond_file.txt", sep="/")
+inputCountFileName=paste(primary_file_path, "Data", "mprau_novaseq_12_15_18_nobar_deseq.txt", sep="/")
+
 #columns are:  treat type, ref type, comparison group, row subset group, name of comparison group 
-compareInfoDFFileName="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/novaseq_cell_type_comparisons.txt"
+compareInfoDFFileName=paste(primary_file_path, "Data", novaseq_cell_type_comparisons.txt", sep="/")
 
-setwd("/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/")
-out_file_path="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/Figures"
+out_file_path=paste(primary_file_path, "Output", sep="/")
+if(!file.exists(out_file_path)){
+	dir.create(out_file_path)
+}
 out_prefix="mprau_novaseq_12_15_18"
 out_file_full_path=paste(c(out_file_path, out_prefix), collapse="/")
 
 #read in CMS/GWAS ID map
-CMSGWASIdMapFileName="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/NovaSeq_Analysis/GWASrewritepos_CMS_arrayassign"
+CMSGWASIdMapFileName=paste(primary_file_path, "Data", "GWASrewritepos_CMS_arrayassign", sep="/")
 
 ###################################################################################
 
