@@ -13,7 +13,6 @@ headerString="Gene\t"
 #create the design matrix
 
 rm -f  ${file_path}/${header_name}_deseq_cond_file.txt
-#rm -f ${file_path}/simulation_design_mat.txt
  
 while read -a array
 do
