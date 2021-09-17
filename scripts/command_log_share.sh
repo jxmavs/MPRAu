@@ -36,7 +36,7 @@ mkdir -p ${out_dir}
 #create reference file for creating the DESeq2 count/conditions files later
 awk '{if($3=="HEK293"){print $NF"\t"$3"_"$5} else{print $NF"\t"$3}}' ${initial_file_info} > ${temp_dir}/${header_name}_cell_type_info.txt
 
-master_condition_file_sorted=${temp_dir}/${header_name}_cell_type_info.txt
+initial_conditions_file=${temp_dir}/${header_name}_cell_type_info.txt
 
 #download read 1 files, second field is read num
 awk -v temp_dir="${temp_dir}" -v header_name="${header_name}" '$2==1{print temp_dir"/"header_name"_"$NF".fastq.gz\t"$1}' ${initial_file_info} > ${temp_dir}/${header_name}_download_info.txt
