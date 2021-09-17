@@ -1,3 +1,6 @@
+#README
+#Each section is broken down by "#####.." - run each section one at a time, and wait for each section to finish before moving to the next one
+  
 ######################### set pre-variables & download ##########################
 
 #change directory to downloaded git repository 
