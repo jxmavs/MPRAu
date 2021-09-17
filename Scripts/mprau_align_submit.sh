@@ -1,4 +1,4 @@
-file_names_file=$1
+file_headers_file=$1
 bowtie_ind=$2
 temp_dir=$3
 header_name=$4
@@ -13,10 +13,10 @@ rm -f ${temp_dir}/${header_name}_mprau_align_submit.txt
 while read -a array
 do
 
-    file_name="${array[0]}"
-    echo "bash ${script_dir}/mprau_align_iter.sh ${file_name} ${temp_dir} ${bowtie_ind} ${alignment_fasta_file} ${info_file} ${numCores}" >> ${temp_dir}/${header_name}_mprau_align_submit.txt
+    file_header="${array[0]}"
+    echo "bash ${script_dir}/mprau_align_iter.sh ${file_header} ${temp_dir} ${bowtie_ind} ${alignment_fasta_file} ${info_file} ${numCores}" >> ${temp_dir}/${header_name}_mprau_align_submit.txt
 
-done<${file_names_file}
+done<${file_headers_file}
 
 #submit all jobs
 totalMem=50G

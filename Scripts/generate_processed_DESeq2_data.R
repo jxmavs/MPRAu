@@ -8,11 +8,11 @@ library(DESeq2) #Differential Expression Analysis
 #change to downloaded directory
 primary_file_path="/Users/jxue/Documents/Dustin_Project/CMS-GWAS/Scripts/github/MPRAu"
 
-inputConditionsFileName=paste(primary_file_path, "Data", "mprau_novaseq_12_15_18_nobar_deseq_cond_file.txt", sep="/")
-inputCountFileName=paste(primary_file_path, "Data", "mprau_novaseq_12_15_18_nobar_deseq.txt", sep="/")
+inputConditionsFileName=paste(primary_file_path, "data", "mprau_novaseq_12_15_18_nobar_deseq_cond_file.txt", sep="/")
+inputCountFileName=paste(primary_file_path, "data", "mprau_novaseq_12_15_18_nobar_deseq.txt", sep="/")
 
 #columns are:  treat type, ref type, comparison group, row subset group, name of comparison group 
-compareInfoDFFileName=paste(primary_file_path, "Data", novaseq_cell_type_comparisons.txt", sep="/")
+compareInfoDFFileName=paste(primary_file_path, "data", novaseq_cell_type_comparisons.txt", sep="/")
 
 out_file_path=paste(primary_file_path, "Processed_Output", sep="/")
 if(!file.exists(out_file_path)){
@@ -22,7 +22,7 @@ out_prefix="mprau_novaseq_12_15_18"
 out_file_full_path=paste(c(out_file_path, out_prefix), collapse="/")
 
 #read in CMS/GWAS ID map
-CMSGWASIdMapFileName=paste(primary_file_path, "Data", "GWASrewritepos_CMS_arrayassign", sep="/")
+CMSGWASIdMapFileName=paste(primary_file_path, "data", "GWASrewritepos_CMS_arrayassign", sep="/")
 
 ###################################################################################
 
@@ -189,6 +189,7 @@ for(ind in 1:numComparisonSets){
 
 
 allDESEQResults=list()
+#boolean to make plots or not
 plotDESEQ=FALSE
 for(ind in 1:numComparisonSets){
 	#ind=1
@@ -241,9 +242,6 @@ for(ind in 1:numComparisonSets){
 
 	revisedColData[,"Ref_Alt"]=factor(revisedColData[,"Ref_Alt"])
 	revisedColData[,"CellType"]=factor(revisedColData[,"CellType"])
-
-	#boolean to make plots or not
-	plotDESEQ=FALSE
 
 	#loop and run DESEQ across all cell type comparisons 
 	deseqDataTableRevisedAll=data.frame()
@@ -346,7 +344,7 @@ for(ind in 1:numComparisonSets){
 			
 		}
 		
-		##### added 9/12/21 - write out normalized counts & individual deseq2 result data for encode #####
+		#####  write out normalized counts & individual deseq2 result data for encode #####
 		deseqDataResultsTemp=estimateSizeFactors(deseqData)
 		deseqNormalizedCounts=counts(deseqDataResultsTemp, normalized=TRUE)
 		
