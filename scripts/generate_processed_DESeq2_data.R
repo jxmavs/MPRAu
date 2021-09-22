@@ -12,7 +12,7 @@ inputConditionsFileName=paste(primary_file_path, "data", "mprau_novaseq_12_15_18
 inputCountFileName=paste(primary_file_path, "data", "mprau_novaseq_12_15_18_nobar_deseq.txt", sep="/")
 
 #columns are:  treat type, ref type, comparison group, row subset group, name of comparison group 
-compareInfoDFFileName=paste(primary_file_path, "data", novaseq_cell_type_comparisons.txt", sep="/")
+compareInfoDFFileName=paste(primary_file_path, "data", "novaseq_cell_type_comparisons.txt", sep="/")
 
 out_file_path=paste(primary_file_path, "Processed_Output", sep="/")
 if(!file.exists(out_file_path)){
@@ -423,4 +423,207 @@ deseq_df_all_del_bash_removed=deseq_df_all[not_del_ind,]
 out_file_full_path=paste(c(out_file_path, out_prefix), collapse="/")
 textOutFileName=paste(c(out_file_full_path, "_deseq_results_all_table_no_del_bash.txt"), collapse="")
 write.table(deseq_df_all_del_bash_removed, quote=F, row.names=F, textOutFileName)
+
+
+#*********************** generate snv tiling results ***********************#
+
+########### preprocess bashing #############################################
+
+########### remove CXCL2, missing, random, include bashing #################
+
+ignore_cols=c("CXCL2", "missing", "random", "16_835850_A", "rs145747214", "rs2008157_5'_End_.*2", "rs2008159_5'_End_.*2", "esv2672388", "rs3203358_3'_End_v2", "rs58290679_3'_End_v2") 
+
+ignore_cols_string=paste(ignore_cols, collapse="|")
+newRowNames=rownames(countDataParsedPre)
+countDataParsed=countDataParsedPre[which(!grepl(ignore_cols_string, newRowNames)),]
+
+#sort again
+rowNames=rownames(countDataParsed)
+sortedCountDataInd=order(rowNames)
+countDataParsed=countDataParsed[sortedCountDataInd,]
+
+###################################################
+
+numComparisonSets=max(compareInfoDF[,3])
+countDataColNames=colnames(countDataParsed)
+countDataRowNames=rownames(countDataParsed)
+
+countDataRevisedBashAllSets=list()
+colDataAllSets=list()
+
+for(ind in 1:numComparisonSets){
+	
+	compareInfoDFSubset=compareInfoDF[which(compareInfoDF[,3]==ind),]
+	
+	#get info, if CMS, then there are no bashing oligos
+	subsetInfo=unique(compareInfoDFSubset[,4])
+	
+	#ID for pulling out specific rows from count data
+	rowID=unique(as.character(compareInfoDFSubset[,4]))
+	IDs=CMSGWASIdMapList[[rowID]]
+
+	treat_and_nontreat_cols=unique(c(as.character(compareInfoDFSubset[,1]),as.character(compareInfoDFSubset[,2])))
+	
+	#get col data names
+	col_subset_ind=rownames(colData)[which(colData[,1] %in% treat_and_nontreat_cols)]
+	row_subset_ind=which(countDataRowNames %in% IDs)
+	
+	countDataSubset=countDataParsed[row_subset_ind, col_subset_ind]
+	colDataSubset=colData[which(colData[,1]%in%treat_and_nontreat_cols),,drop=FALSE]
+	
+	countDataRevisedBashAllSets[[ind]]=countDataSubset
+	
+	colDataAllSets[[ind]]=colDataSubset
+}
+
+
+
+################ use DESEQ2 to calculate FC/Skew (altered bashing version) ###############
+
+out_file_full_path_snp_bash=paste(c(out_file_path, paste(c(out_prefix, "snv_tiling"), collapse="_")), collapse="/")
+
+allDESEQResultsSnpBash=list()
+
+for(ind in 1:numComparisonSets){
+
+	countDataRevisedBashSubset=countDataRevisedBashAllSets[[ind]]
+	compareInfoDFSubset=compareInfoDF[which(compareInfoDF[,3]==ind),]
+	#change - to . for DESEQ purposes
+	compareInfoDFSubset[,2]=gsub("-",".", compareInfoDFSubset[,2])
+	
+	#get info, if CMS, then there are no bashing oligos
+	subsetInfo=unique(compareInfoDFSubset[,4])
+	
+	colDataSubset=colDataAllSets[[ind]]
+	
+	countDataRevisedBashSubsetRowNames=rownames(countDataRevisedBashSubset)
+	
+	#change - to .
+	revisedColData=colDataSubset
+	rownames(revisedColData)=gsub("-",".", rownames(revisedColData))
+	revisedColData[,"CellType"]=gsub("-",".", revisedColData[,"CellType"])
+	
+	revisedColData[,"CellType"]=factor(revisedColData[,"CellType"])
+
+	#boolean to make plots or not
+	plotDESEQ=TRUE
+
+	#loop and run DESEQ across all cell type comparisons 
+	deseqDataTableRevisedAll=data.frame()
+
+	colnames(countDataRevisedBashSubset)=gsub("-",".", colnames(countDataRevisedBashSubset))
+	
+	for(i in 1:nrow(compareInfoDFSubset)){
+
+		treat_level=as.character(compareInfoDFSubset[i,1])
+		base_level=as.character(compareInfoDFSubset[i,2])
+	
+		revisedColData[,"CellType"]=relevel(revisedColData[,"CellType"], base_level)
+
+		deseqData=DESeqDataSetFromMatrix(countData = countDataRevisedBashSubset, colData = revisedColData, design = ~ CellType)
+
+		#betaPrior should automatically be false for interaction terms
+		deseqDataResults <- DESeq(deseqData, betaPrior=FALSE, fitType="local")
+		
+		resultsNames(deseqDataResults)
+
+		deseqOutput=results(deseqDataResults, contrast=c("CellType", treat_level, base_level))
+
+		deseqOutputDataFrame=data.frame(deseqOutput)
+		OriginalName=rownames(deseqOutputDataFrame)
+		rownames(deseqOutputDataFrame)=c()
+
+		deseqDataTableRevised=data.frame(SeqName=OriginalName, deseqOutputDataFrame)
+
+		colnames(deseqDataTableRevised)[2:ncol(deseqDataTableRevised)]=paste(colnames(deseqDataTableRevised)[2:ncol(deseqDataTableRevised)], treat_level, sep="_")
+
+		if(nrow(deseqDataTableRevisedAll)==0){
+			deseqDataTableRevisedAll=deseqDataTableRevised
+		}
+		else{
+			deseqDataTableRevisedAll=merge(deseqDataTableRevisedAll, deseqDataTableRevised, by="SeqName")
+		}
+	
+		####################### some prelim DESEQ plots ##########################
+	
+		if(plotDESEQ){
+
+			plotName=paste(c("treat", treat_level, "base", base_level,"Activity"), collapse="_")
+			plotTitle=plotName
+			plotOutFileName=paste(c(out_file_full_path_snp_bash,paste(c("_",plotName),collapse=""), ".pdf"), collapse="")
+			pdf(plotOutFileName)
+			par(cex.axis=1, cex.lab=1.5, cex.main=1, cex.sub=1)
+			plotMA(deseqOutput, alpha=0.01, ylab="Activity", xlab="Mean of Normalized Counts" )
+			dev.off()
+
+			plotName=paste(c("treat", treat_level, "base", base_level,"disp_fit"), collapse="_")
+			plotTitle=plotName
+			plotOutFileName=paste(c(out_file_full_path_snp_bash,paste(c("_",plotName),collapse=""), ".pdf"), collapse="")
+			pdf(plotOutFileName)
+			par(cex.axis=1, cex.lab=1.5, cex.main=1, cex.sub=1)
+			plotDispEsts(deseqDataResults)
+			dev.off()
+			
+		}
+	}
+	
+	allDESEQResultsSnpBash[[ind]]=deseqDataTableRevisedAll
+
+}
+
+### combine table into one file ###
+
+#pool CMS and GWAS first
+deseq_df_CMS=allDESEQResultsSnpBash[[1]]
+colnames_deseq=colnames(deseq_df_CMS)
+#keep padj and log2FoldChange
+keep_col_ind=which(grepl("padj*|log2FoldChange*|lfcSE*|pvalue*", colnames_deseq))
+deseq_df_CMS=deseq_df_CMS[,c(1, keep_col_ind)]
+
+deseq_df_GWAS=allDESEQResultsSnpBash[[2]]
+colnames_deseq=colnames(deseq_df_GWAS)
+#keep padj and log2FoldChange
+keep_col_ind=which(grepl("padj*|log2FoldChange*|lfcSE*|pvalue*", colnames_deseq))
+deseq_df_GWAS=deseq_df_GWAS[,c(1, keep_col_ind)]
+
+deseq_df_GWAS_CMS_overlap=merge(deseq_df_GWAS, deseq_df_CMS, by="SeqName")
+
+## create the merged table, just get GWAS hits for any overlaps with CMS ####
+deseq_df_CMS_nonoverlap_GWAS=deseq_df_CMS[which(!(deseq_df_CMS[,"SeqName"]%in%deseq_df_GWAS[,"SeqName"])),]
+
+#change colnames of all
+
+colnames(deseq_df_GWAS)=gsub("_GWAS", "" , colnames(deseq_df_GWAS))
+colnames(deseq_df_CMS_nonoverlap_GWAS)=gsub("_CMS", "" , colnames(deseq_df_CMS_nonoverlap_GWAS))
+
+deseq_df_HEK293FT=rbind(deseq_df_GWAS, deseq_df_CMS_nonoverlap_GWAS)
+
+deseq_df_all=deseq_df_HEK293FT
+#collapse to single data frame
+for(ind in 3:length(allDESEQResultsSnpBash)){
+	
+	deseq_df_iter=allDESEQResultsSnpBash[[ind]]
+	colnames_deseq=colnames(deseq_df_iter)
+	#keep padj and log2FoldChange
+	keep_col_ind=which(grepl("padj*|log2FoldChange*|lfcSE*|pvalue*", colnames_deseq))
+	
+	deseq_df_all=merge(deseq_df_all, deseq_df_iter[, c(1, keep_col_ind)], by="SeqName")
+}
+
+
+#write out full analysis
+#textOutFileName=paste(c(out_file_full_path_snp_bash, "_deseq_results_all_table_full.txt"), collapse="")
+#write.table(deseq_df_all, quote=F, row.names=F, textOutFileName)
+
+#write out snv tiling only oligo results
+orig_oligo_names=unique(as.character(allBashMetaDf[,"OrigSeqName"]))
+
+bashed_orig_oligo_ind=which(deseq_df_all[,"SeqName"] %in% orig_oligo_names)
+
+deseq_df_all_bashed_orig=deseq_df_all[bashed_orig_oligo_ind,]
+deseq_df_all_bash_only=deseq_df_all[which(grepl("bash", as.character(deseq_df_all[,"SeqName"]))),]
+
+deseq_df_all_bash_all=rbind(deseq_df_all_bashed_orig, deseq_df_all_bash_only)
+textOutFileName=paste(c(out_file_full_path_snp_bash, "_deseq_results_all_table.txt"), collapse="")
+write.table(deseq_df_all, quote=F, row.names=F, textOutFileName)
 
