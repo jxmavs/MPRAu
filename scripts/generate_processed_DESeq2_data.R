@@ -484,6 +484,9 @@ out_file_full_path_snp_bash=paste(c(out_file_path, paste(c(out_prefix, "snv_tili
 
 allDESEQResultsSnpBash=list()
 
+#boolean to make plots or not
+plotDESEQ=TRUE
+
 for(ind in 1:numComparisonSets){
 
 	countDataRevisedBashSubset=countDataRevisedBashAllSets[[ind]]
@@ -504,9 +507,6 @@ for(ind in 1:numComparisonSets){
 	revisedColData[,"CellType"]=gsub("-",".", revisedColData[,"CellType"])
 	
 	revisedColData[,"CellType"]=factor(revisedColData[,"CellType"])
-
-	#boolean to make plots or not
-	plotDESEQ=TRUE
 
 	#loop and run DESEQ across all cell type comparisons 
 	deseqDataTableRevisedAll=data.frame()
