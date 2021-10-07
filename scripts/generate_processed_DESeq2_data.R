@@ -581,10 +581,10 @@ write.table(deseq_df_all, quote=F, row.names=F, textOutFileName)
 
 ######### write out the bed files for encode ##########
 
-cell_names=c("HEK293_CMS", "HEK293_GWAS", "HEPG2", "HMEC", "K562", "LCL", "SKNSH")
+cell_names=c("HEK293_CMS", "HEK293_GWAS", "HEPG2", "HMEC", "K562", "GM12878", "SKNSH")
 
 cell_plasmid_map_encode=list()
-cell_plasmid_map_encode[["LCL"]]="PB_CMS.GWAS_4_11_Cycles"
+cell_plasmid_map_encode[["GM12878"]]="PB_CMS.GWAS_4_11_Cycles"
 cell_plasmid_map_encode[["K562"]]="PB_CMS.GWAS_4_11_Cycles"
 cell_plasmid_map_encode[["HEPG2"]]="PB_CMS.GWAS_4_11_Cycles"
 cell_plasmid_map_encode[["SKNSH"]]="PB_CMS.GWAS_4_11_Cycles"
