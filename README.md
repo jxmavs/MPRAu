@@ -15,5 +15,5 @@ I also output a final statistics table which gives me info on how many reads are
 command_log_share.sh is written using the qsub system.
 
 ## Generate processed data
-After generating the count data, to generate the processed data (DESeq2 fold changes/p-values), use Scripts/generate_processed_DESeq2_data.R
+After generating the initial count data, to generate the processed data (DESeq2 fold changes/p-values), use Scripts/generate_processed_DESeq2_data.R
 
